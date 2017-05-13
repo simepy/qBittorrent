@@ -41,7 +41,6 @@
 #endif
 #include <QNetworkConfigurationManager>
 #include <QPointer>
-#include <QReadWriteLock>
 #include <QStringList>
 #include <QVector>
 #include <QWaitCondition>
@@ -317,7 +316,7 @@ namespace BitTorrent
         bool isTrackerFilteringEnabled() const;
         void setTrackerFilteringEnabled(bool enabled);
         QStringList bannedIPs() const;
-        void setBannedIPs(const QStringList &list);
+        void setBannedIPs(const QStringList &newList);
 
         void startUpTorrents();
         TorrentHandle *findTorrent(const InfoHash &hash) const;
@@ -602,8 +601,6 @@ namespace BitTorrent
 #endif
 
         QNetworkConfigurationManager m_networkManager;
-
-        mutable QReadWriteLock m_lock;
 
         static Session *m_instance;
     };

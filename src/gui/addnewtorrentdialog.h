@@ -38,6 +38,7 @@
 
 #include "base/bittorrent/infohash.h"
 #include "base/bittorrent/torrentinfo.h"
+#include "base/bittorrent/addtorrentparams.h"
 
 namespace BitTorrent
 {
@@ -65,7 +66,8 @@ public:
     static bool isTopLevel();
     static void setTopLevel(bool value);
 
-    static void show(QString source, QWidget *parent = 0);
+    static void show(QString source, const BitTorrent::AddTorrentParams &inParams, QWidget *parent);
+    static void show(QString source, QWidget *parent);
 
 private slots:
     void showAdvancedSettings(bool show);
@@ -73,7 +75,6 @@ private slots:
     void updateDiskSpaceLabel();
     void onSavePathChanged(int);
     void renameSelectedFile();
-    void setdialogPosition();
     void updateMetadata(const BitTorrent::TorrentInfo &info);
     void browseButton_clicked();
     void handleDownloadFailed(const QString &url, const QString &reason);
@@ -87,7 +88,7 @@ private slots:
     void reject() override;
 
 private:
-    explicit AddNewTorrentDialog(QWidget *parent = 0);
+    explicit AddNewTorrentDialog(const BitTorrent::AddTorrentParams &inParams, QWidget *parent);
     bool loadTorrent(const QString &torrentPath);
     bool loadMagnet(const BitTorrent::MagnetUri &magnetUri);
     void populateSavePathComboBox();
@@ -98,6 +99,7 @@ private:
     void setMetadataProgressIndicator(bool visibleIndicator, const QString &labelText = QString());
     void setupTreeview();
     void setCommentText(const QString &str) const;
+    void setSavePath(const QString &newPath);
 
     void showEvent(QShowEvent *event) override;
 
@@ -108,10 +110,10 @@ private:
     QString m_filePath;
     BitTorrent::InfoHash m_hash;
     BitTorrent::TorrentInfo m_torrentInfo;
-    QShortcut *editHotkey;
     QByteArray m_headerState;
     int m_oldIndex;
     QScopedPointer<TorrentFileGuard> m_torrentGuard;
+    BitTorrent::AddTorrentParams m_torrentParams;
 };
 
 #endif // ADDNEWTORRENTDIALOG_H

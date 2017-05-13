@@ -343,7 +343,7 @@ void RSSWidget::downloadSelectedTorrents()
 
         if (!article->torrentUrl().isEmpty()) {
             if (AddNewTorrentDialog::isEnabled())
-                AddNewTorrentDialog::show(article->torrentUrl());
+                AddNewTorrentDialog::show(article->torrentUrl(), window());
             else
                 BitTorrent::Session::instance()->addTorrent(article->torrentUrl());
         }
@@ -416,11 +416,6 @@ void RSSWidget::copySelectedFeedsURL()
 
 void RSSWidget::handleCurrentFeedItemChanged(QTreeWidgetItem *currentItem)
 {
-    if (!currentItem) {
-        m_articleListWidget->clear();
-        return;
-    }
-
     m_articleListWidget->setRSSItem(m_feedListWidget->getRSSItem(currentItem)
                                     , (currentItem == m_feedListWidget->stickyUnreadItem()));
 }

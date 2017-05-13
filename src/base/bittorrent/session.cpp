@@ -33,7 +33,6 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
-#include <QDirIterator>
 #include <QHostAddress>
 #include <QNetworkAddressEntry>
 #include <QNetworkInterface>
@@ -156,16 +155,6 @@ namespace
         return expanded;
     }
 
-    QStringList findAllFiles(const QString &dirPath)
-    {
-        QStringList files;
-        QDirIterator it(dirPath, QDir::Files, QDirIterator::Subdirectories);
-        while (it.hasNext())
-            files << it.next();
-
-        return files;
-    }
-
     template <typename T>
     struct LowerLimited
     {
@@ -180,7 +169,7 @@ namespace
         {
         }
 
-        T operator()(T val)
+        T operator()(T val) const
         {
             return val <= m_limit ? m_ret : val;
         }
@@ -873,9 +862,6 @@ void Session::adjustLimits()
 void Session::configure()
 {
     qDebug("Configuring session");
-    if (!m_deferredConfigureScheduled) return; // Obtaining the lock is expensive, let's check early
-    QWriteLocker locker(&m_lock);
-    if (!m_deferredConfigureScheduled) return; // something might have changed while we were getting the lock
 #if LIBTORRENT_VERSION_NUM < 10100
     libt::session_settings sessionSettings = m_nativeSession->settings();
     configure(sessionSettings);
@@ -1734,35 +1720,19 @@ bool Session::findIncompleteFiles(TorrentInfo &torrentInfo, QString &savePath) c
 {
     auto findInDir = [](const QString &dirPath, TorrentInfo &torrentInfo) -> bool
     {
+        const QDir dir(dirPath);
         bool found = false;
-        if (torrentInfo.filesCount() == 1) {
-            const QString filePath = dirPath + torrentInfo.filePath(0);
-            if (QFile(filePath).exists()) {
+        for (int i = 0; i < torrentInfo.filesCount(); ++i) {
+            const QString filePath = torrentInfo.filePath(i);
+            if (dir.exists(filePath)) {
                 found = true;
             }
-            else if (QFile(filePath + QB_EXT).exists()) {
+            else if (dir.exists(filePath + QB_EXT)) {
                 found = true;
-                torrentInfo.renameFile(0, torrentInfo.filePath(0) + QB_EXT);
+                torrentInfo.renameFile(i, filePath + QB_EXT);
             }
-        }
-        else {
-            QSet<QString> allFiles;
-            int dirPathSize = dirPath.size();
-            foreach (const QString &file, findAllFiles(dirPath + torrentInfo.name()))
-                allFiles << file.mid(dirPathSize);
-            for (int i = 0; i < torrentInfo.filesCount(); ++i) {
-                QString filePath = torrentInfo.filePath(i);
-                if (allFiles.contains(filePath)) {
-                    found = true;
-                }
-                else {
-                    filePath += QB_EXT;
-                    if (allFiles.contains(filePath)) {
-                        found = true;
-                        torrentInfo.renameFile(i, filePath);
-                    }
-                }
-            }
+            if ((i % 100) == 0)
+                qApp->processEvents();
         }
 
         return found;
@@ -3029,12 +2999,10 @@ void Session::initResumeFolder()
 
 void Session::configureDeferred()
 {
-    if (m_deferredConfigureScheduled) return; // Obtaining the lock is expensive, let's check early
-    QWriteLocker locker(&m_lock);
-    if (m_deferredConfigureScheduled) return; // something might have changed while we were getting the lock
-
-    QMetaObject::invokeMethod(this, "configure", Qt::QueuedConnection);
-    m_deferredConfigureScheduled = true;
+    if (!m_deferredConfigureScheduled) {
+        QMetaObject::invokeMethod(this, "configure", Qt::QueuedConnection);
+        m_deferredConfigureScheduled = true;
+    }
 }
 
 // Enable IP Filtering
@@ -3666,6 +3634,8 @@ namespace
         magnetUri = MagnetUri(QString::fromStdString(fast.dict_find_string_value("qBt-magnetUri")));
         torrentData.addPaused = fast.dict_find_int_value("qBt-paused");
         torrentData.addForced = fast.dict_find_int_value("qBt-forced");
+        torrentData.firstLastPiecePriority = fast.dict_find_int_value("qBt-firstLastPiecePriority");
+        torrentData.sequential = fast.dict_find_int_value("qBt-sequential");
 
         prio = fast.dict_find_int_value("qBt-queuePosition");
 

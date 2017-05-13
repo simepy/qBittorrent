@@ -96,6 +96,7 @@ namespace BitTorrent
         QString savePath;
         bool disableTempPath;
         bool sequential;
+        bool firstLastPiecePriority;
         bool hasSeedStatus;
         bool skipChecking;
         bool hasRootFolder;
@@ -361,6 +362,14 @@ namespace BitTorrent
         void handleAppendExtensionToggled();
         void saveResumeData(bool updateStatus = false);
 
+        /**
+         * @brief fraction of file pieces that are available at least from one peer
+         *
+         * This is not the same as torrrent availability, it is just a fraction of pieces
+         * that can be downloaded right now. It varies between 0 to 1.
+         */
+        QVector<qreal> availableFileFractions() const;
+
     private:
         typedef boost::function<void ()> EventTrigger;
 
@@ -430,6 +439,7 @@ namespace BitTorrent
         bool m_tempPathDisabled;
         bool m_hasMissingFiles;
         bool m_hasRootFolder;
+        bool m_needsToSetFirstLastPiecePriority;
 
         bool m_pauseAfterRecheck;
         bool m_needSaveResumeData;

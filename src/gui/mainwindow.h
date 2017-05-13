@@ -52,7 +52,6 @@ class TransferListFiltersWidget;
 class PropertiesWidget;
 class StatusBar;
 class TorrentCreatorDlg;
-class downloadFromURL;
 class LineEdit;
 class ExecutionLog;
 class PowerManagement;
@@ -103,7 +102,7 @@ public:
     void showNotificationBaloon(QString title, QString msg) const;
 
 private slots:
-    void toggleVisibility(QSystemTrayIcon::ActivationReason e = QSystemTrayIcon::Trigger);
+    void toggleVisibility(const QSystemTrayIcon::ActivationReason reason = QSystemTrayIcon::Trigger);
 
     void balloonClicked();
     void writeSettings();
@@ -200,7 +199,7 @@ private:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void closeEvent(QCloseEvent *) override;
     void showEvent(QShowEvent *) override;
-    bool event(QEvent *event) override;
+    bool event(QEvent *e) override;
     void displayRSSTab(bool enable);
     void displaySearchTab(bool enable);
 
