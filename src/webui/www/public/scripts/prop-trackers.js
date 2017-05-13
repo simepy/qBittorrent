@@ -129,3 +129,21 @@ $('addTrackersPlus').addEvent('click', function addTrackerDlg() {
         height: 250
     });
 });
+
+$('removeTrackersMoins').addEvent('click', function addTrackerDlg() {
+    if (current_hash.length == 0) return;
+    new MochaUI.Window({
+        id: 'trackersPage',
+        title: "QBT_TR(Trackers addition dialog)QBT_TR",
+        loadMethod: 'iframe',
+        contentURL: 'removetrackers.html?hash=' + current_hash,
+        scrollbars: true,
+        resizable: false,
+        maximizable: false,
+        closable: true,
+        paddingVertical: 0,
+        paddingHorizontal: 0,
+        width: 500,
+        height: 250
+    });
+});

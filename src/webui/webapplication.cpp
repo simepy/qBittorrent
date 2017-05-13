@@ -89,6 +89,7 @@ QMap<QString, QMap<QString, WebApplication::Action> > WebApplication::initialize
     ADD_ACTION(command, download);
     ADD_ACTION(command, upload);
     ADD_ACTION(command, addTrackers);
+    ADD_ACTION(command, removeTrackers);
     ADD_ACTION(command, resumeAll);
     ADD_ACTION(command, pauseAll);
     ADD_ACTION(command, resume);
@@ -470,6 +471,24 @@ void WebApplication::action_command_addTrackers()
                 trackers << url;
         }
         torrent->addTrackers(trackers);
+    }
+}
+
+void WebApplication::action_command_removeTrackers()
+{
+    CHECK_URI(0);
+    CHECK_PARAMETERS("hash" << "urls");
+    QString hash = request().posts["hash"];
+
+    BitTorrent::TorrentHandle *const torrent = BitTorrent::Session::instance()->findTorrent(hash);
+    if (torrent) {
+        QList<BitTorrent::TrackerEntry> trackers;
+        foreach (QString url, request().posts["urls"].split('\n')) {
+            url = url.trimmed();
+            if (!url.isEmpty())
+                trackers << url;
+        }
+        torrent->removeTrackers(trackers);
     }
 }
 

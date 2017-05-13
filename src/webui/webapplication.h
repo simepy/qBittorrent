@@ -62,6 +62,7 @@ private:
     void action_command_download();
     void action_command_upload();
     void action_command_addTrackers();
+    void action_command_removeTrackers();
     void action_command_resumeAll();
     void action_command_pauseAll();
     void action_command_resume();

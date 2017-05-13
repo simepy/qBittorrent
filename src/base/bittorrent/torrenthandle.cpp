@@ -395,6 +395,18 @@ void TorrentHandle::addTrackers(const QList<TrackerEntry> &trackers)
         m_session->handleTorrentTrackersAdded(this, addedTrackers);
 }
 
+void TorrentHandle::removeTrackers(const QList<TrackerEntry> &trackers)
+{
+    QList<TrackerEntry> deletedTrackers;
+
+    foreach (const TrackerEntry &tracker, trackers) {
+	deletedTrackers << tracker;
+    }
+
+    if (!deletedTrackers.isEmpty())
+        m_session->handleTorrentTrackersRemoved(this, deletedTrackers);
+}
+
 void TorrentHandle::replaceTrackers(QList<TrackerEntry> trackers)
 {
     QList<TrackerEntry> existingTrackers = this->trackers();
